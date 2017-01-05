@@ -1,17 +1,19 @@
 package com.mwh.materialtest;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,12 +21,17 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ashokvarma.bottomnavigation.BottomNavigationBar;
+import com.ashokvarma.bottomnavigation.BottomNavigationItem;
+import com.mwh.materialtest.fragment.MyFragment;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.ashokvarma.bottomnavigation.BottomNavigationBar.MODE_SHIFTING;
 
 /**
  * Material控件
@@ -37,27 +44,29 @@ public class MainActivity extends AppCompatActivity {
     DrawerLayout drawerLayout;
     @BindView(R.id.nav_view)
     NavigationView navView;
+    @BindView(R.id.tab)
+    TabLayout tab;
+    @BindView(R.id.view_pager)
+    ViewPager viewPager;
     @BindView(R.id.fab)
     FloatingActionButton fab;
-    @BindView(R.id.recycler_view)
-    RecyclerView recyclerView;
-    @BindView(R.id.swipe_refresh)
-    SwipeRefreshLayout swipeRefresh;
+//    @BindView(R.id.tab_layout)
+//    LinearLayout tabLayout;
+    @BindView(R.id.bottom_navigation_bar)
+BottomNavigationBar bottomNavigationBar;
 
     private TextView userName;
-
-    private Fruit[] fruits = {new Fruit("苹果", R.drawable.apple), new Fruit("香蕉", R.drawable.banana), new Fruit("橘子", R.drawable.orange), new Fruit("梨", R.drawable.pear)
-            , new Fruit("菠萝", R.drawable.pineapple)};
-
-    private List<Fruit> fruitList = new ArrayList<>();
-    private FruitAdapter adapter;
+    private MyPagerAdapter adapter;
+    private Context mContext;
+    private boolean isHide=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        setSupportActionBar(toolbar);
+        mContext = this;
+        initToolBar(toolbar, true, "水果");
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             //设置菜单按钮
@@ -71,68 +80,90 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        //获得头布局
+        //获得侧滑菜单头布局
         View headerView = navView.getHeaderView(0);
         userName = (TextView) headerView.findViewById(R.id.user_name);
         userName.setText("2342fsd");
 
+        ArrayList<MyFragment> fragments = new ArrayList<>();
+        MyFragment fragment1 = MyFragment.newInstance();
+        fragment1.setTitle("标题1");
+        fragments.add(fragment1);
+        MyFragment fragment2 = MyFragment.newInstance();
+        fragment2.setTitle("标题2");
+        fragments.add(fragment2);
+        MyFragment fragment3 = MyFragment.newInstance();
+        fragment3.setTitle("标题3");
+        fragments.add(fragment3);
+        MyFragment fragment4 = MyFragment.newInstance();
+        fragment4.setTitle("标题4");
+        fragments.add(fragment4);
+        MyFragment fragment5 = MyFragment.newInstance();
+        fragment5.setTitle("标题5");
+        fragments.add(fragment5);
+        MyFragment fragment6 = MyFragment.newInstance();
+        fragment6.setTitle("标题7");
+        fragments.add(fragment6);
+
+
+        adapter = new MyPagerAdapter(getSupportFragmentManager(), fragments);
+        viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(fragments.size());
+        tab.setupWithViewPager(viewPager);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //底部提示，带按钮
-                Snackbar.make(v, "fab", Snackbar.LENGTH_SHORT)
-                        .setAction("取消", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Toast.makeText(MainActivity.this, "取消成功", Toast.LENGTH_SHORT).show();
-                            }
-                        }).show();
-            }
-        });
-
-        initData();
-        GridLayoutManager manager = new GridLayoutManager(this, 2);
-        recyclerView.setLayoutManager(manager);
-        adapter = new FruitAdapter(fruitList);
-        recyclerView.setAdapter(adapter);
-
-        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
-        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshFruits();
-            }
-        });
-    }
-
-    private void refreshFruits(){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try{
-                    Thread.sleep(2000);
-                } catch (Exception e){
-                    e.printStackTrace();
+                if (isHide){
+                    bottomNavigationBar.hide();
+                    bottomNavigationBar.hide(true);
+                }else {
+                    bottomNavigationBar.show();
+                    bottomNavigationBar.show(true);//隐藏是否启动动画，这里并不能自定义动画
                 }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        initData();
-                        adapter.notifyDataSetChanged();
-                        swipeRefresh.setRefreshing(false);
-                    }
-                });
+                isHide=!isHide;
             }
-        }).start();
-    }
-    private void initData() {
-        fruitList.clear();
-        for (int i = 0; i < 50; i++) {
-            Random random = new Random();
-            int index = random.nextInt(fruits.length);
-            fruitList.add(fruits[index]);
+        });
+        //初始化底部导航栏
+        initNavigationBar();
 
-        }
+    }
+
+    private void initNavigationBar() {
+        bottomNavigationBar.addItem(new BottomNavigationItem(R.drawable.home_ico, "主页"))
+                .addItem(new BottomNavigationItem(R.drawable.data_ico, "数据"))
+                .addItem(new BottomNavigationItem(R.drawable.upload_ico, "上传"))
+                .addItem(new BottomNavigationItem(R.drawable.syn_ico, "下载"))
+                .addItem(new BottomNavigationItem(R.drawable.set_ico, "设置"))
+                .setMode(MODE_SHIFTING)
+                .initialise();//所有的设置需在调用该方法前完成
+        bottomNavigationBar.show();
+        bottomNavigationBar.show(true);//隐藏是否启动动画，这里并不能自定义动画
+        bottomNavigationBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener() {//这里也可以使用SimpleOnTabSelectedListener
+            @Override
+            public void onTabSelected(int position) {//未选中 -> 选中
+            }
+
+            @Override
+            public void onTabUnselected(int position) {//选中 -> 未选中
+            }
+
+            @Override
+            public void onTabReselected(int position) {//选中 -> 选中
+            }
+        });
+
+    }
+
+
+
+    /**
+     * 初始化 Toolbar
+     */
+    public void initToolBar(Toolbar toolbar, boolean homeAsUpEnabled, String title) {
+        toolbar.setTitle(title);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(homeAsUpEnabled);
     }
 
     @Override
@@ -159,5 +190,31 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         return true;
+    }
+
+    private class MyPagerAdapter extends FragmentPagerAdapter {
+
+        private List<MyFragment> fragmentList;
+
+        public MyPagerAdapter(FragmentManager fm, List<MyFragment> fragmentList) {
+            super(fm);
+            this.fragmentList = fragmentList;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return fragmentList.get(position);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return fragmentList.get(position).getTitle();
+        }
+
+
+        @Override
+        public int getCount() {
+            return fragmentList.size();
+        }
     }
 }
