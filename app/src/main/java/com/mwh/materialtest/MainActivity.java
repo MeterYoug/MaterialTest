@@ -3,7 +3,6 @@ package com.mwh.materialtest;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -48,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
     TabLayout tab;
     @BindView(R.id.view_pager)
     ViewPager viewPager;
-    @BindView(R.id.fab)
-    FloatingActionButton fab;
+//    @BindView(R.id.fab)
+//    FloatingActionButton fab;
 //    @BindView(R.id.tab_layout)
 //    LinearLayout tabLayout;
     @BindView(R.id.bottom_navigation_bar)
@@ -111,19 +110,19 @@ BottomNavigationBar bottomNavigationBar;
         viewPager.setOffscreenPageLimit(fragments.size());
         tab.setupWithViewPager(viewPager);
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isHide){
-                    bottomNavigationBar.hide();
-                    bottomNavigationBar.hide(true);
-                }else {
-                    bottomNavigationBar.show();
-                    bottomNavigationBar.show(true);//隐藏是否启动动画，这里并不能自定义动画
-                }
-                isHide=!isHide;
-            }
-        });
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (isHide){
+//                    bottomNavigationBar.hide();
+//                    bottomNavigationBar.hide(true);
+//                }else {
+//                    bottomNavigationBar.show();
+//                    bottomNavigationBar.show(true);//隐藏是否启动动画，这里并不能自定义动画
+//                }
+//                isHide=!isHide;
+//            }
+//        });
         //初始化底部导航栏
         initNavigationBar();
 
